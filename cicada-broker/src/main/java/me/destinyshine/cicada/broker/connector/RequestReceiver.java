@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Created by destinyliu on 2016/2/20.
  */
-public class SocketChannelReceiver {
+public class RequestReceiver {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final SocketChannel channel;
@@ -21,7 +21,7 @@ public class SocketChannelReceiver {
     private boolean completed;
     private int requestType;
 
-    public SocketChannelReceiver(SocketChannel channel) {
+    public RequestReceiver(SocketChannel channel) {
         Objects.requireNonNull(channel, "channel can not be null.");
         this.channel = channel;
     }
@@ -42,9 +42,18 @@ public class SocketChannelReceiver {
             channel.read(contentBuffer);
             if (!contentBuffer.hasRemaining()) {
                 this.completed = true;
+                this.contentBuffer.rewind();
             }
         }
 
+    }
+
+    /**
+     *
+     * @return
+     */
+    public ByteBuffer getReadableContentBuffer() {
+        return contentBuffer;
     }
 
     public boolean isCompleted() {
@@ -54,4 +63,5 @@ public class SocketChannelReceiver {
     public int getRequestType() {
         return requestType;
     }
+
 }

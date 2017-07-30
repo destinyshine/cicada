@@ -11,7 +11,7 @@ import me.destinyshine.cicada.broker.connector.handler.ProduceMessageHandler;
  * @author liujianyu.ljy
  * @date 2017/07/27
  */
-public class RequestDispatcher {
+public class RequestHandlerFactory {
 
     private final Map<Integer, Class<? extends RequestHandler>> handlerMapping = new HashMap<>();
 
@@ -19,7 +19,7 @@ public class RequestDispatcher {
         handlerMapping.put(RequestTypes.PRODUCE, ProduceMessageHandler.class);
     }
 
-    public void dispatch(SocketChannelReceiver receiver)
+    public void getHandler(RequestReceiver receiver)
         throws IllegalAccessException, InstantiationException {
         handlerMapping.get(receiver.getRequestType()).newInstance().handle(receiver);
     }

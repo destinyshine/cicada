@@ -38,7 +38,6 @@ public class SocketChannelConnector {
     private int connectionsNum = 0;
     private int readThreadsNum;
 
-    private final RequestDispatcher requestDispatcher = new RequestDispatcher();
 
     public SocketChannelConnector(String host, int port) {
         this.host = host;
@@ -110,11 +109,11 @@ public class SocketChannelConnector {
 
         private int connections = 0;
 
-        private ConcurrentLinkedQueue<RegisterArgs> waitingRegisterChannels;
+        private ConcurrentLinkedQueue<RegisterArgs> waitingRegisterQueue;
 
         public ConnectionsSelectorRunner(Selector selector) {
             this.selector = selector;
-            this.waitingRegisterChannels = new ConcurrentLinkedQueue<>();
+            this.waitingRegisterQueue = new ConcurrentLinkedQueue<>();
         }
 
         @Override
@@ -124,7 +123,7 @@ public class SocketChannelConnector {
             while (true) {
                 try {
                     RegisterArgs regArgs;
-                    while ((regArgs = waitingRegisterChannels.poll()) != null) {
+                    while ((regArgs = waitingRegisterQueue.poll()) != null) {
                         SelectionKey key = regArgs.channel.register(selector, regArgs.opts);
                         if (logger.isDebugEnabled()) {
                             logger.debug("register channel: %s, opts: %d", regArgs.channel.toString(), regArgs.opts);
@@ -148,11 +147,15 @@ public class SocketChannelConnector {
             try {
                 if (key.isReadable()) {
                     SocketChannel socketChannel = (SocketChannel)key.channel();
-                    SocketChannelReceiver connectionHandler = (SocketChannelReceiver)key.attachment();
-                    if (connectionHandler == null) {
-                        key.attach(new SocketChannelReceiver(socketChannel));
+                    RequestReceiver receiver = (RequestReceiver)key.attachment();
+                    if (receiver == null) {
+                        key.attach(new RequestReceiver(socketChannel));
                     }
-                    connectionHandler.resolveBuffer();
+                    receiver.resolveBuffer();
+                    if (receiver.isCompleted()) {
+
+                        key.attach(null);
+                    }
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -160,7 +163,7 @@ public class SocketChannelConnector {
         }
 
         public SelectionKey pushToRegister(SocketChannel channel, int opts) {
-            this.waitingRegisterChannels.add(new RegisterArgs(channel, opts));
+            this.waitingRegisterQueue.add(new RegisterArgs(channel, opts));
             selector.wakeup();
             if (logger.isDebugEnabled()) {
                 logger.debug("wakeuped selector.");

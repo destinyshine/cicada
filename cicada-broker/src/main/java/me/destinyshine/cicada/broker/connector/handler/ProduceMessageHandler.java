@@ -2,7 +2,7 @@ package me.destinyshine.cicada.broker.connector.handler;
 
 import me.destinyshine.cicada.broker.connector.RequestHandler;
 import me.destinyshine.cicada.broker.connector.Response;
-import me.destinyshine.cicada.broker.connector.SocketChannelReceiver;
+import me.destinyshine.cicada.broker.connector.RequestReceiver;
 
 /**
  * Created by liujianyu.ljy on 17/7/27.
@@ -13,7 +13,7 @@ import me.destinyshine.cicada.broker.connector.SocketChannelReceiver;
 public class ProduceMessageHandler implements RequestHandler {
 
     @Override
-    public Response handle(SocketChannelReceiver socketChannelReceiver) {
+    public Response handle(RequestReceiver socketChannelReceiver) {
         return null;
     }
 }

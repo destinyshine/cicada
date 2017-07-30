@@ -1,5 +1,7 @@
 package me.destinyshine.cicada.broker.connector;
 
+import me.destinyshine.cicada.broker.request.Request;
+
 /**
  * Created by liujianyu.ljy on 17/7/27.
  *
@@ -8,5 +10,7 @@ package me.destinyshine.cicada.broker.connector;
  */
 public interface RequestHandler {
 
-    public Response handle(SocketChannelReceiver socketChannelReceiver);
+    boolean support(Request request);
+
+    Response handle(Request request);
 }
