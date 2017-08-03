@@ -3,33 +3,30 @@ package me.destinyshine.cicada.broker.connector;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
-import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Created by destinyliu on 2016/2/20.
+ * @author destinyliu
+ * @date 2016/2/20
  */
-public class RequestReceiver {
+public class RequestFrame {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
-    private final SocketChannel channel;
 
     private ByteBuffer sizeBuffer = ByteBuffer.allocate(4);
     private ByteBuffer contentBuffer;
     private boolean completed;
-    private int requestType;
 
-    public RequestReceiver(SocketChannel channel) {
-        Objects.requireNonNull(channel, "channel can not be null.");
-        this.channel = channel;
+    public RequestFrame() {
     }
 
-    public void resolveBuffer() throws IOException {
+    public void resolveBuffer(SocketChannel channel) throws IOException {
         if (sizeBuffer.hasRemaining()) {
             int read = channel.read(sizeBuffer);
             if (read == -1) {
+                logger.warn("channel closed.");
                 throw new IllegalStateException("channel closed.");
             }
         }
@@ -49,19 +46,14 @@ public class RequestReceiver {
     }
 
     /**
-     *
      * @return
      */
-    public ByteBuffer getReadableContentBuffer() {
+    public ByteBuffer getReadableFrame() {
         return contentBuffer;
     }
 
     public boolean isCompleted() {
         return completed;
-    }
-
-    public int getRequestType() {
-        return requestType;
     }
 
 }

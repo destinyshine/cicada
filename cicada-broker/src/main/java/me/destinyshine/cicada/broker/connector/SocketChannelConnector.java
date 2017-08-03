@@ -9,6 +9,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import me.destinyshine.cicada.broker.RequestDispatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,8 +25,6 @@ public class SocketChannelConnector {
 
     private ExecutorService executorService;
 
-    private ByteBuffer byteBuffer = ByteBuffer.allocate(1024);
-
     private String host;
     private int port;
 
@@ -38,6 +37,7 @@ public class SocketChannelConnector {
     private int connectionsNum = 0;
     private int readThreadsNum;
 
+    private RequestDispatcher requestDispatcher = new RequestDispatcher();
 
     public SocketChannelConnector(String host, int port) {
         this.host = host;
@@ -147,14 +147,15 @@ public class SocketChannelConnector {
             try {
                 if (key.isReadable()) {
                     SocketChannel socketChannel = (SocketChannel)key.channel();
-                    RequestReceiver receiver = (RequestReceiver)key.attachment();
-                    if (receiver == null) {
-                        key.attach(new RequestReceiver(socketChannel));
+                    RequestFrame requestFrame = (RequestFrame)key.attachment();
+                    if (requestFrame == null) {
+                        requestFrame = new RequestFrame();
+                        key.attach(requestFrame);
                     }
-                    receiver.resolveBuffer();
-                    if (receiver.isCompleted()) {
-
+                    requestFrame.resolveBuffer(socketChannel);
+                    if (requestFrame.isCompleted()) {
                         key.attach(null);
+                        requestDispatcher.dispatch(requestFrame);
                     }
                 }
             } catch (IOException e) {

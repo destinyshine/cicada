@@ -13,6 +13,6 @@ import me.destinyshine.cicada.broker.connector.SocketChannelConnector;
 public class BrokerLauncher {
 
     public static void main(String[] args) throws IOException {
-        new SocketChannelConnector("127.0.0.1", 2017).connect();
+        new SocketChannelConnector("127.0.0.1", 20178).connect();
     }
 }

@@ -4,11 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import me.destinyshine.cicada.broker.connector.RequestHandler;
-import me.destinyshine.cicada.broker.connector.RequestReceiver;
+import me.destinyshine.cicada.broker.connector.RequestFrame;
 import me.destinyshine.cicada.broker.connector.Response;
-import me.destinyshine.cicada.broker.request.ProduceRequestExtractor;
+import me.destinyshine.cicada.broker.request.ProduceRequestDecoder;
 import me.destinyshine.cicada.broker.request.Request;
-import me.destinyshine.cicada.broker.request.RequestExtractor;
+import me.destinyshine.cicada.broker.request.RequestDecoder;
+import me.destinyshine.cicada.broker.request.handler.ProducerRequestHandler;
 
 /**
  * Created by liujianyu.ljy on 17/7/28.
@@ -17,19 +18,20 @@ import me.destinyshine.cicada.broker.request.RequestExtractor;
  * @date 2017/07/28
  */
 public class RequestDispatcher {
-    private final List<RequestExtractor> requestExtractors = new ArrayList<>();
+    private final List<RequestDecoder> requestDecoders = new ArrayList<>();
 
     private final List<RequestHandler> requestHandlers = new ArrayList<>();
 
-    private RequestDispatcher() {
-        this.requestExtractors.add(new ProduceRequestExtractor());
+    public RequestDispatcher() {
+        this.requestDecoders.add(new ProduceRequestDecoder());
+        this.requestHandlers.add(new ProducerRequestHandler());
     }
 
-    public Response dispatch(RequestReceiver receiver) {
+    public Response dispatch(RequestFrame receiver) {
         Request request = null;
-        for (RequestExtractor extractor : requestExtractors) {
-            if (extractor.support(receiver)) {
-                request = extractor.extractRequest(receiver);
+        for (RequestDecoder decoder : requestDecoders) {
+            if (decoder.support(receiver)) {
+                request = decoder.decode(receiver);
                 break;
             }
         }

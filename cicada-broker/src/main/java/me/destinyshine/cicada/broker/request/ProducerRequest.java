@@ -8,30 +8,36 @@ import java.nio.ByteBuffer;
  * @author liujianyu.ljy
  * @date 2017/07/30
  */
-public class ProducerRequest implements Request {
+public class ProducerRequest extends AbstractRequest implements Request {
 
-    private String topic;
+    private final String topic;
 
-    private ByteBuffer message;
+    private final ByteBuffer payload;
 
-    public ProducerRequest(String topic, ByteBuffer message) {
+    public ProducerRequest(short requestType, short apiVersion, int correlationId, String clientId, String topic,
+                           ByteBuffer payload) {
+        super(requestType, apiVersion, correlationId, clientId);
         this.topic = topic;
-        this.message = message;
+        this.payload = payload;
     }
 
     public String getTopic() {
         return topic;
     }
 
-    public void setTopic(String topic) {
-        this.topic = topic;
+    public ByteBuffer getPayload() {
+        return payload;
     }
 
-    public ByteBuffer getMessage() {
-        return message;
-    }
-
-    public void setMessage(ByteBuffer message) {
-        this.message = message;
+    @Override
+    public String toString() {
+        return "ProducerRequest{" +
+            "requestType=" + requestType +
+            ", apiVersion=" + apiVersion +
+            ", correlationId=" + correlationId +
+            ", clientId='" + clientId + '\'' +
+            ", topic='" + topic + '\'' +
+            ", payload=" + payload +
+            '}';
     }
 }
