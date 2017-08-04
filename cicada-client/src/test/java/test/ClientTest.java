@@ -7,6 +7,7 @@ import java.nio.channels.SocketChannel;
 import java.util.Arrays;
 import java.util.stream.Stream;
 
+import client.CicadaClient;
 import me.destinyshine.cicada.broker.request.ProduceRequestDecoder;
 import me.destinyshine.cicada.broker.request.ProducerRequest;
 
@@ -19,22 +20,8 @@ import me.destinyshine.cicada.broker.request.ProducerRequest;
 public class ClientTest {
 
     public static void main(String[] args) throws IOException {
-        InetSocketAddress serverAddress = new InetSocketAddress("127.0.0.1", 20178);
-        SocketChannel channel = SocketChannel.open(serverAddress);
-        ProducerRequest request = new ProducerRequest(
-            (short)1,
-            (short)2,
-            3,
-            "1.1.0",
-            "mytopic",
-            ByteBuffer.wrap("hello".getBytes())
-        );
-        ByteBuffer frame = new ProduceRequestDecoder().encode(request);
-        for (byte b : frame.array()) {
-            System.out.print(b + ",");
-        }
-        channel.write(frame);
-        //channel.finishConnect();
+        CicadaClient client = new CicadaClient("127.0.0.1", 20178);
+        client.send("hello".getBytes());
         try {
             Thread.currentThread().join();
         } catch (InterruptedException e) {
