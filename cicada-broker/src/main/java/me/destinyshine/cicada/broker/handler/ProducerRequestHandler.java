@@ -1,4 +1,4 @@
-package me.destinyshine.cicada.broker.request.handler;
+package me.destinyshine.cicada.broker.handler;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;

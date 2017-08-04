@@ -6,7 +6,7 @@ import java.nio.channels.*;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import me.destinyshine.cicada.broker.RequestDispatcher;
+import me.destinyshine.cicada.broker.handler.RequestDispatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

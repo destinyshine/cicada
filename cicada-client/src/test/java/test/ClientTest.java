@@ -1,15 +1,8 @@
 package test;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.nio.ByteBuffer;
-import java.nio.channels.SocketChannel;
-import java.util.Arrays;
-import java.util.stream.Stream;
 
 import client.CicadaClient;
-import me.destinyshine.cicada.broker.request.ProduceRequestDecoder;
-import me.destinyshine.cicada.broker.request.ProducerRequest;
 
 /**
  * Created by liujianyu.ljy on 17/8/3.

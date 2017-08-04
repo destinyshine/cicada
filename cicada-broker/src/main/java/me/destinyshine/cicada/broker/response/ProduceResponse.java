@@ -1,4 +1,4 @@
-package me.destinyshine.cicada.broker.request;
+package me.destinyshine.cicada.broker.response;
 
 import java.nio.ByteBuffer;
 
