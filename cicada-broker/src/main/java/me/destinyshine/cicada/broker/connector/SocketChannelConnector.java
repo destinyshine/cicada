@@ -2,12 +2,9 @@ package me.destinyshine.cicada.broker.connector;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.nio.ByteBuffer;
 import java.nio.channels.*;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import me.destinyshine.cicada.broker.RequestDispatcher;
 import org.slf4j.Logger;
@@ -23,21 +20,19 @@ public class SocketChannelConnector {
 
     private ServerSocketChannel serverSocketChannel;
 
-    private ExecutorService executorService;
+    private Thread acceptorExecutor;
+    private Thread reactorExecutor;
 
     private String host;
     private int port;
 
     private Selector acceptSelector;
 
-    private ConnectionsSelectorRunner[] selectorRunners;
-
-    private int maxtonnectionsPerSelector = 10;
-
     private int connectionsNum = 0;
-    private int readThreadsNum;
+    private int reactorThreadsNum;
 
     private RequestDispatcher requestDispatcher = new RequestDispatcher();
+    private Reactor[] reactorExecutors;
 
     public SocketChannelConnector(String host, int port) {
         this.host = host;
@@ -46,11 +41,10 @@ public class SocketChannelConnector {
 
     public void connect() throws IOException {
 
-        readThreadsNum = Runtime.getRuntime().availableProcessors();
-        executorService = Executors.newFixedThreadPool(readThreadsNum + 1);
+        reactorThreadsNum = Runtime.getRuntime().availableProcessors() * 2;
 
         initAcceptThread();
-        initReadThreads();
+        initReactExecutors();
     }
 
     private void initAcceptThread() throws IOException {
@@ -59,7 +53,7 @@ public class SocketChannelConnector {
         serverSocketChannel.configureBlocking(false);
         acceptSelector = Selector.open();
         serverSocketChannel.register(acceptSelector, SelectionKey.OP_ACCEPT);
-        executorService.submit((Runnable)() -> {
+        acceptorExecutor = new Thread(() -> {
             while (true) {
                 try {
                     acceptSelector.select();
@@ -73,15 +67,16 @@ public class SocketChannelConnector {
                 }
             }
         });
+        acceptorExecutor.start();
     }
 
-    private void initReadThreads() throws IOException {
+    private void initReactExecutors() throws IOException {
         //初始化
-        selectorRunners = new ConnectionsSelectorRunner[readThreadsNum];
-        for (int i = 0; i < readThreadsNum; i++) {
-            ConnectionsSelectorRunner selectorRunner = new ConnectionsSelectorRunner(Selector.open());
-            executorService.submit(selectorRunner);
-            selectorRunners[i] = selectorRunner;
+        reactorExecutors = new Reactor[reactorThreadsNum];
+        for (int i = 0; i < reactorThreadsNum; i++) {
+            Reactor reactor = new Reactor(Selector.open());
+            reactor.start();
+            reactorExecutors[i] = reactor;
         }
     }
 
@@ -94,8 +89,8 @@ public class SocketChannelConnector {
                 }
                 socketChannel.configureBlocking(false);
                 //挑选一个Selector
-                ConnectionsSelectorRunner selectorRunner = selectorRunners[connectionsNum % selectorRunners.length];
-                selectorRunner.pushToRegister(socketChannel, SelectionKey.OP_READ);
+                Reactor reactor = reactorExecutors[connectionsNum % reactorExecutors.length];
+                reactor.pushToRegister(socketChannel, SelectionKey.OP_READ);
                 connectionsNum++;
             }
         } catch (IOException e) {
@@ -103,21 +98,25 @@ public class SocketChannelConnector {
         }
     }
 
-    class ConnectionsSelectorRunner implements Runnable {
+    class Reactor {
 
         private Selector selector;
 
-        private int connections = 0;
-
         private ConcurrentLinkedQueue<RegisterArgs> waitingRegisterQueue;
 
-        public ConnectionsSelectorRunner(Selector selector) {
+        private Thread thread;
+
+        public Reactor(Selector selector) {
             this.selector = selector;
             this.waitingRegisterQueue = new ConcurrentLinkedQueue<>();
+            this.thread = new Thread(this::doSelectLoop);
         }
 
-        @Override
-        public void run() {
+        public void start() {
+            this.thread.start();
+        }
+
+        private void doSelectLoop() {
             logger.info("start read thread-" + Thread.currentThread().getName());
 
             while (true) {
@@ -128,7 +127,6 @@ public class SocketChannelConnector {
                         if (logger.isDebugEnabled()) {
                             logger.debug("register channel: %s, opts: %d", regArgs.channel.toString(), regArgs.opts);
                         }
-                        connections++;
                     }
                     selector.select();
                     Iterator<SelectionKey> selectionKeyIterator = selector.selectedKeys().iterator();
@@ -145,14 +143,19 @@ public class SocketChannelConnector {
 
         private void handleReadableSelection(SelectionKey key) {
             try {
-                if (key.isReadable()) {
+                if (key.isValid() && key.isReadable()) {
                     SocketChannel socketChannel = (SocketChannel)key.channel();
                     RequestFrame requestFrame = (RequestFrame)key.attachment();
                     if (requestFrame == null) {
                         requestFrame = new RequestFrame();
                         key.attach(requestFrame);
                     }
-                    requestFrame.resolveBuffer(socketChannel);
+                    try {
+                        requestFrame.resolveBuffer(socketChannel);
+                    } catch (IllegalStateException e) {
+                        socketChannel.close();
+                        key.cancel();
+                    }
                     if (requestFrame.isCompleted()) {
                         key.attach(null);
                         requestDispatcher.dispatch(requestFrame);
