@@ -67,6 +67,7 @@ public class ProduceRequestDecoder implements RequestDecoder {
         buffer.putShort(requestType);
         buffer.putShort(apiVersion);
         buffer.putInt(correlationId);
+        ByteBufferUtils.putSizedString(buffer, clientId);
         ByteBufferUtils.putSizedString(buffer, topicBytes);
         ByteBufferUtils.putSizedBytes(buffer, message);
 
