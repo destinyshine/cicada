@@ -42,6 +42,7 @@ public class ProducerRequestHandler implements RequestHandler {
             fileChannel.write(ByteBuffer.allocate(Long.BYTES).putLong(getLastOffset()));
             fileChannel.write(producerRequest.getMessage().getByteBuffer());
             fileChannel.force(true);
+            fileChannel.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
