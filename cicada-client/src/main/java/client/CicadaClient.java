@@ -1,4 +1,5 @@
-package  client;
+package client;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
@@ -25,8 +26,13 @@ public class CicadaClient {
     }
 
     public Acknowledge send(byte[] payload) throws IOException {
-        ProducerRequest request = new ProducerRequestBuilder().requestType((short)1).apiVersion((short)2)
-            .correlationId(3).clientId("1.1.0").topic("mytopic").payload(ByteBuffer.wrap(payload))
+        ProducerRequest request = new ProducerRequestBuilder()
+            .requestType((short)1)
+            .apiVersion((short)2)
+            .correlationId(3)
+            .clientId("1.1.0")
+            .topic("mytopic")
+            .message(ByteBuffer.wrap(payload))
             .build();
         ByteBuffer frame = new ProduceRequestDecoder().encode(request);
         socketChannel.write(frame);

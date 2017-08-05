@@ -9,6 +9,7 @@
     <version>0.0.1-SNAPSHOT</version>
     <modules>
         <module>cicada-broker</module>
+        <module>cicada-client</module>
     </modules>
     <packaging>pom</packaging>
     <properties>
