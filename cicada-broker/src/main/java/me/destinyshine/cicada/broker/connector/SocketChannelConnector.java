@@ -21,7 +21,7 @@ public class SocketChannelConnector {
     private ServerSocketChannel serverSocketChannel;
 
     private Thread acceptorExecutor;
-    private Thread reactorExecutor;
+    private Reactor[] reactorExecutors;
 
     private String host;
     private int port;
@@ -32,7 +32,6 @@ public class SocketChannelConnector {
     private int reactorThreadsNum;
 
     private RequestDispatcher requestDispatcher = new RequestDispatcher();
-    private Reactor[] reactorExecutors;
 
     public SocketChannelConnector(String host, int port) {
         this.host = host;
@@ -152,7 +151,7 @@ public class SocketChannelConnector {
                     }
                     try {
                         requestFrame.resolveBuffer(socketChannel);
-                    } catch (IllegalStateException e) {
+                    } catch (IOException e) {
                         socketChannel.close();
                         key.cancel();
                     }
