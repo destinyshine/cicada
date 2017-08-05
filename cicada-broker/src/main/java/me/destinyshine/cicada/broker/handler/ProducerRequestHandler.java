@@ -3,10 +3,13 @@ package me.destinyshine.cicada.broker.handler;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
 import java.nio.channels.FileChannel;
 
 import me.destinyshine.cicada.broker.connector.RequestHandler;
 import me.destinyshine.cicada.broker.connector.Response;
+import me.destinyshine.cicada.broker.encode.BytesMessage;
 import me.destinyshine.cicada.broker.request.ProducerRequest;
 import me.destinyshine.cicada.broker.request.Request;
 import org.slf4j.Logger;
@@ -36,7 +39,8 @@ public class ProducerRequestHandler implements RequestHandler {
             }
             FileChannel fileChannel = new RandomAccessFile("messages.log", "rw").getChannel();
             fileChannel.position(fileChannel.size());
-            fileChannel.write(producerRequest.getPayload());
+            fileChannel.write(ByteBuffer.allocate(Long.BYTES).putLong(getLastOffset()));
+            fileChannel.write(producerRequest.getMessage().getByteBuffer());
             fileChannel.force(true);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -44,6 +48,10 @@ public class ProducerRequestHandler implements RequestHandler {
             e.printStackTrace();
         }
         return null;
+    }
+
+    private long getLastOffset() {
+        return 1;
     }
 
 }

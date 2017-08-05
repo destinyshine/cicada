@@ -31,16 +31,14 @@ public class ProduceRequestDecoder implements RequestDecoder {
         int correlationId = buffer.getInt();
         String clientId = ByteBufferUtils.readSizedString(buffer);
         String topic = ByteBufferUtils.readSizedString(buffer);
-        ByteBuffer key = ByteBufferUtils.readSizedBytes(buffer);
-        ByteBuffer payload = ByteBufferUtils.readSizedBytes(buffer);
+        ByteBuffer message = ByteBufferUtils.readSizedBytes(buffer);
         return new ProducerRequestBuilder()
             .requestType(requestType)
             .apiVersion(apiVersion)
             .correlationId(correlationId)
             .clientId(clientId)
             .topic(topic)
-            .key(key)
-            .payload(payload)
+            .message(message)
             .build();
 
     }
@@ -54,13 +52,11 @@ public class ProduceRequestDecoder implements RequestDecoder {
         short apiVersion = producerRequest.getApiVersion();
         int correlationId = producerRequest.getCorrelationId();
         byte[] topicBytes = producerRequest.getTopic().getBytes();
-        ByteBuffer key = producerRequest.getKey();
-        ByteBuffer payload = producerRequest.getPayload();
+        ByteBuffer message = producerRequest.getMessage().getByteBuffer();
 
         int frameSize = Short.BYTES + Short.BYTES + Integer.BYTES
             + ByteBufferUtils.getStringNeedSize(topicBytes)
-            + ByteBufferUtils.getBytesNeedSize(key)
-            + ByteBufferUtils.getBytesNeedSize(payload);
+            + ByteBufferUtils.getBytesNeedSize(message);
 
         ByteBuffer buffer = ByteBuffer.allocate(Integer.BYTES + frameSize);
 
@@ -70,8 +66,7 @@ public class ProduceRequestDecoder implements RequestDecoder {
         buffer.putShort(apiVersion);
         buffer.putInt(correlationId);
         ByteBufferUtils.putSizedString(buffer, topicBytes);
-        ByteBufferUtils.putSizedBytes(buffer, key);
-        ByteBufferUtils.putSizedBytes(buffer, payload);
+        ByteBufferUtils.putSizedBytes(buffer, message);
 
         buffer.rewind();
 

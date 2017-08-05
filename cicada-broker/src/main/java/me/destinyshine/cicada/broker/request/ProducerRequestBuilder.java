@@ -8,7 +8,7 @@ public class ProducerRequestBuilder {
     private int correlationId;
     private String clientId;
     private String topic;
-    private ByteBuffer key;
+    private ByteBuffer message;
     private ByteBuffer payload;
 
     public ProducerRequestBuilder requestType(short requestType) {
@@ -36,17 +36,12 @@ public class ProducerRequestBuilder {
         return this;
     }
 
-    public ProducerRequestBuilder key(ByteBuffer key) {
-        this.key = key;
-        return this;
-    }
-
-    public ProducerRequestBuilder payload(ByteBuffer payload) {
-        this.payload = payload;
+    public ProducerRequestBuilder message(ByteBuffer message) {
+        this.message = message;
         return this;
     }
 
     public ProducerRequest build() {
-        return new ProducerRequest(requestType, apiVersion, correlationId, clientId, topic, key, payload);
+        return new ProducerRequest(requestType, apiVersion, correlationId, clientId, topic, message);
     }
 }

@@ -2,6 +2,8 @@ package me.destinyshine.cicada.broker.request;
 
 import java.nio.ByteBuffer;
 
+import me.destinyshine.cicada.broker.encode.BytesMessage;
+
 /**
  * Created by liujianyu.ljy on 17/7/30.
  *
@@ -18,40 +20,32 @@ public class ProducerRequest extends AbstractRequest implements Request {
     //int partition
     //int MessageSetSize
     //byte[] MessageSet
-
+    //--in-message>>
     //Crc => int32
     //MagicByte => int8
     //Attributes => int8
     //Key => bytes
     //Value => bytes
 
-    private final ByteBuffer key;
-
-    private final ByteBuffer payload;
+    private BytesMessage message;
 
     public ProducerRequest(short requestType,
                            short apiVersion,
                            int correlationId,
                            String clientId,
                            String topic,
-                           ByteBuffer key,
-                           ByteBuffer payload) {
+                           ByteBuffer message) {
         super(requestType, apiVersion, correlationId, clientId);
         this.topic = topic;
-        this.key = key;
-        this.payload = payload;
+        this.message = new BytesMessage(message);
     }
 
     public String getTopic() {
         return topic;
     }
 
-    public ByteBuffer getKey() {
-        return key;
-    }
-
-    public ByteBuffer getPayload() {
-        return payload;
+    public BytesMessage getMessage() {
+        return message;
     }
 
     @Override
@@ -62,7 +56,7 @@ public class ProducerRequest extends AbstractRequest implements Request {
             ", correlationId=" + correlationId +
             ", clientId='" + clientId + '\'' +
             ", topic='" + topic + '\'' +
-            ", payload=" + payload +
+            ", message=" + message +
             '}';
     }
 }

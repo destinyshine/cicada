@@ -45,6 +45,10 @@ public abstract class ByteBufferUtils {
         return Integer.BYTES + bytes.limit();
     }
 
+    public static int getBytesNeedSize(byte[] bytes) {
+        return Integer.BYTES + bytes.length;
+    }
+
     public static void putSizedString(ByteBuffer buffer, byte[] string) {
         buffer.putShort((short)string.length).put(string);
     }
@@ -55,5 +59,9 @@ public abstract class ByteBufferUtils {
 
     public static void putSizedBytes(ByteBuffer buffer, ByteBuffer bytes) {
         buffer.putInt(bytes.limit()).put(bytes);
+    }
+
+    public static void putSizedBytes(ByteBuffer buffer, byte[] bytes) {
+        buffer.putInt(bytes.length).put(bytes);
     }
 }
