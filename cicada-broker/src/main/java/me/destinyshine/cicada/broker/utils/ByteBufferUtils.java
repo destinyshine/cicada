@@ -34,7 +34,7 @@ public abstract class ByteBufferUtils {
         ByteBuffer messageBuffer = buffer.slice();
         messageBuffer.limit(messageSize);
         buffer.position(buffer.position() + messageSize);
-        return buffer;
+        return messageBuffer;
     }
 
     public static int getStringNeedSize(byte[] string) {

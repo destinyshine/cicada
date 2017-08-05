@@ -32,7 +32,6 @@ public class ProduceRequestDecoder implements RequestDecoder {
         String clientId = ByteBufferUtils.readSizedString(buffer);
         String topic = ByteBufferUtils.readSizedString(buffer);
         ByteBuffer message = ByteBufferUtils.readSizedBytes(buffer);
-        message.flip();
         return new ProducerRequestBuilder()
             .requestType(requestType)
             .apiVersion(apiVersion)

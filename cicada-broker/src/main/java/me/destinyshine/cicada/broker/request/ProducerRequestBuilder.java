@@ -9,7 +9,6 @@ public class ProducerRequestBuilder {
     private String clientId;
     private String topic;
     private ByteBuffer message;
-    private ByteBuffer payload;
 
     public ProducerRequestBuilder requestType(short requestType) {
         this.requestType = requestType;
