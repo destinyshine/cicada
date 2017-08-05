@@ -40,7 +40,6 @@ public class ProduceRequestDecoder implements RequestDecoder {
             .topic(topic)
             .message(message)
             .build();
-
     }
 
     @Override
@@ -74,7 +73,6 @@ public class ProduceRequestDecoder implements RequestDecoder {
         buffer.rewind();
 
         return buffer;
-
     }
 
 }
