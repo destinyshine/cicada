@@ -12,6 +12,7 @@ public abstract class ByteBufferUtils {
 
     /**
      * size int16
+     *
      * @param buffer
      * @return
      */
@@ -34,5 +35,25 @@ public abstract class ByteBufferUtils {
         messageBuffer.limit(messageSize);
         buffer.position(buffer.position() + messageSize);
         return buffer;
+    }
+
+    public static int getStringNeedSize(byte[] string) {
+        return Short.BYTES + string.length;
+    }
+
+    public static int getBytesNeedSize(ByteBuffer bytes) {
+        return Integer.BYTES + bytes.limit();
+    }
+
+    public static void putSizedString(ByteBuffer buffer, byte[] string) {
+        buffer.putShort((short)string.length).put(string);
+    }
+
+    public static void putSizedString(ByteBuffer buffer, String string) {
+        putSizedString(buffer, string.getBytes());
+    }
+
+    public static void putSizedBytes(ByteBuffer buffer, ByteBuffer bytes) {
+        buffer.putInt(bytes.limit()).put(bytes);
     }
 }

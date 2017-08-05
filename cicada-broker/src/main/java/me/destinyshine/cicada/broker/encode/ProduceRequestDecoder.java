@@ -5,6 +5,7 @@ import java.nio.ByteBuffer;
 import me.destinyshine.cicada.broker.connector.RequestTypes;
 import me.destinyshine.cicada.broker.connector.RequestFrame;
 import me.destinyshine.cicada.broker.request.ProducerRequest;
+import me.destinyshine.cicada.broker.request.ProducerRequestBuilder;
 import me.destinyshine.cicada.broker.request.Request;
 import me.destinyshine.cicada.broker.utils.ByteBufferUtils;
 
@@ -30,15 +31,17 @@ public class ProduceRequestDecoder implements RequestDecoder {
         int correlationId = buffer.getInt();
         String clientId = ByteBufferUtils.readSizedString(buffer);
         String topic = ByteBufferUtils.readSizedString(buffer);
+        ByteBuffer key = ByteBufferUtils.readSizedBytes(buffer);
         ByteBuffer payload = ByteBufferUtils.readSizedBytes(buffer);
-        return new ProducerRequest(
-            requestType,
-            apiVersion,
-            correlationId,
-            clientId,
-            topic,
-            payload
-        );
+        return new ProducerRequestBuilder()
+            .requestType(requestType)
+            .apiVersion(apiVersion)
+            .correlationId(correlationId)
+            .clientId(clientId)
+            .topic(topic)
+            .key(key)
+            .payload(payload)
+            .build();
 
     }
 
@@ -51,11 +54,13 @@ public class ProduceRequestDecoder implements RequestDecoder {
         short apiVersion = producerRequest.getApiVersion();
         int correlationId = producerRequest.getCorrelationId();
         byte[] topicBytes = producerRequest.getTopic().getBytes();
+        ByteBuffer key = producerRequest.getKey();
         ByteBuffer payload = producerRequest.getPayload();
 
         int frameSize = Short.BYTES + Short.BYTES + Integer.BYTES
-            + (Integer.BYTES + topicBytes.length)
-            + (Integer.BYTES + payload.limit());
+            + ByteBufferUtils.getStringNeedSize(topicBytes)
+            + ByteBufferUtils.getBytesNeedSize(key)
+            + ByteBufferUtils.getBytesNeedSize(payload);
 
         ByteBuffer buffer = ByteBuffer.allocate(Integer.BYTES + frameSize);
 
@@ -64,8 +69,9 @@ public class ProduceRequestDecoder implements RequestDecoder {
         buffer.putShort(requestType);
         buffer.putShort(apiVersion);
         buffer.putInt(correlationId);
-        buffer.putInt(topicBytes.length).put(topicBytes);
-        buffer.putInt(payload.limit()).put(payload);
+        ByteBufferUtils.putSizedString(buffer, topicBytes);
+        ByteBufferUtils.putSizedBytes(buffer, key);
+        ByteBufferUtils.putSizedBytes(buffer, payload);
 
         buffer.rewind();
 
