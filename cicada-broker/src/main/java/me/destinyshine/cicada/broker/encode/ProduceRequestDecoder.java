@@ -51,10 +51,12 @@ public class ProduceRequestDecoder implements RequestDecoder {
         short requestType = producerRequest.getRequestType();
         short apiVersion = producerRequest.getApiVersion();
         int correlationId = producerRequest.getCorrelationId();
+        byte[] clientId = producerRequest.getClientId().getBytes();
         byte[] topicBytes = producerRequest.getTopic().getBytes();
         ByteBuffer message = producerRequest.getMessage().getByteBuffer();
 
         int frameSize = Short.BYTES + Short.BYTES + Integer.BYTES
+            + ByteBufferUtils.getStringNeedSize(clientId)
             + ByteBufferUtils.getStringNeedSize(topicBytes)
             + ByteBufferUtils.getBytesNeedSize(message);
 
