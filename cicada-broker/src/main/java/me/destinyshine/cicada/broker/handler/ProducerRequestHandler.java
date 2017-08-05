@@ -41,6 +41,7 @@ public class ProducerRequestHandler implements RequestHandler {
             ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES + producerRequest.getMessage().getByteBuffer().limit());
             buffer.putLong(getLastOffset());
             buffer.put(producerRequest.getMessage().getByteBuffer());
+            buffer.flip();
             fileChannel.position(fileChannel.size());
             fileChannel.write(buffer);
             fileChannel.force(true);
