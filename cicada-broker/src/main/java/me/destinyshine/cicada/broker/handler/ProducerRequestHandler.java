@@ -38,12 +38,12 @@ public class ProducerRequestHandler implements RequestHandler {
                 logger.debug("handle request: {}" + request);
             }
             FileChannel fileChannel = new RandomAccessFile("messages.log", "rw").getChannel();
-            ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES + producerRequest.getMessage().getByteBuffer().limit());
-            buffer.putLong(getLastOffset());
-            buffer.put(producerRequest.getMessage().getByteBuffer());
-            buffer.flip();
+            ByteBuffer messageBytes = producerRequest.getMessage().getByteBuffer();
+            ByteBuffer sizeBytes = ByteBuffer.allocate(Long.BYTES).putLong(getLastOffset());
+            sizeBytes.flip();
             fileChannel.position(fileChannel.size());
-            fileChannel.write(buffer);
+            fileChannel.write(sizeBytes);
+            fileChannel.write(messageBytes);
             fileChannel.force(true);
             fileChannel.close();
         } catch (FileNotFoundException e) {
